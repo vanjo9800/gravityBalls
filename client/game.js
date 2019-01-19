@@ -1,13 +1,4 @@
-var engineSocket = new WebSocket("ws://www.example.com/socketserver");
-
-engineSocket.onmessage = function (event) {
-    console.log(event.data);
-}
-
-var width = window.innerWidth;
-var height = window.innerHeight;
-var startedGame = false;
-//var clicked = false;
+var engineSocket = new WebSocket("ws://localhost:8765");
 
 function circle() {
     this.x = 0;
@@ -36,46 +27,64 @@ function circle() {
 }
 
 var circles = [];
-var initNumber = 30;
-for (var i = 0; i < initNumber; i++) {
-    circles[i] = new circle();
-    circles[i].x = Math.random() * width;
-    circles[i].y = Math.random() * height;
-    circles[i].r = Math.random() * 20 + 10;
-    circles[i].dx = Math.random() * 10 + 3;
-    circles[i].dy = Math.random() * 10 + 3;
+engineSocket.onmessage = function (event) {
+    circles = [];
+    var balls = JSON.parse(event.data);
+    for (var i = 0; i < balls.length; i++) {
+        circles[i] = new circle();
+        circles[i].x = balls[i].x;
+        circles[i].y = balls[i].y;
+        circles[i].r = balls[i].r;
+    }
+    console.log(balls);
 }
+
+var width = window.innerWidth;
+var height = window.innerHeight;
+var startedGame = false;
+//var clicked = false;
+
+
+// var initNumber = 30;
+// for (var i = 0; i < initNumber; i++) {
+//     circles[i] = new circle();
+//     circles[i].x = Math.random() * width;
+//     circles[i].y = Math.random() * height;
+//     circles[i].r = Math.random() * 20 + 10;
+//     circles[i].dx = Math.random() * 10 + 3;
+//     circles[i].dy = Math.random() * 10 + 3;
+// }
 
 
 function update() {
     if (!startedGame) return;
-    for (var i = 0; i < initNumber; i++) {
-        circles[i].move();
-        if (circles[i].y + circles[i].r > canvas.height) {
-            circles[i].y = canvas.height - circles[i].r;
-            circles[i].dy = -circles[i].dy;
-        }
-        if (circles[i].y + circles[i].r < 0) {
-            circles[i].y = circles[i].r;
-            circles[i].dy = -circles[i].dy;
-        }
-        if (circles[i].x + circles[i].r > canvas.width) {
-            circles[i].x = canvas.width - circles[i].r;
-            circles[i].dx = -circles[i].dx;
-        }
-        if (circles[i].x + circles[i].r < 0) {
-            circles[i].x = circles[i].r;
-            circles[i].dx = -circles[i].dx;
-        }
-        var collision = false;
-        for (var j = 0; j < initNumber; j++) {
-            if (i == j) continue;
-            if (circles[i].collidingWith(circles[j])) {
-                collision = true;
-            }
-        }
-        if (collision) circles[i].moveBack();
-    }
+    // for (var i = 0; i < initNumber; i++) {
+    //     circles[i].move();
+    //     if (circles[i].y + circles[i].r > canvas.height) {
+    //         circles[i].y = canvas.height - circles[i].r;
+    //         circles[i].dy = -circles[i].dy;
+    //     }
+    //     if (circles[i].y + circles[i].r < 0) {
+    //         circles[i].y = circles[i].r;
+    //         circles[i].dy = -circles[i].dy;
+    //     }
+    //     if (circles[i].x + circles[i].r > canvas.width) {
+    //         circles[i].x = canvas.width - circles[i].r;
+    //         circles[i].dx = -circles[i].dx;
+    //     }
+    //     if (circles[i].x + circles[i].r < 0) {
+    //         circles[i].x = circles[i].r;
+    //         circles[i].dx = -circles[i].dx;
+    //     }
+    //     var collision = false;
+    //     for (var j = 0; j < initNumber; j++) {
+    //         if (i == j) continue;
+    //         if (circles[i].collidingWith(circles[j])) {
+    //             collision = true;
+    //         }
+    //     }
+    //     if (collision) circles[i].moveBack();
+    // }
 }
 
 function draw() {
@@ -98,7 +107,6 @@ function clearScreen() {
     document.getElementById("startscreen").style.display = "none";
     document.getElementById("gamescreen").style.display = "block";
     startedGame = true;
-    console.log("Zfdsd");
 }
 
 function keyup(key) {
