@@ -63,8 +63,8 @@ def get_rebound_vectors(p1, p2):
 
 class Universe:
     def __init__(self, w, h, r):
-        p1 = Planet(Vector(0,100), Vector(20,100), 30)
-        p2 = Planet(Vector(100,0), Vector(2,200), 50,2)
+        p1 = Planet(Vector(30,150), Vector(20,100), 30)
+        p2 = Planet(Vector(100,50), Vector(2,200), 50,2)
         self.planets = [p1,p2]
         self.width = w
         self.height = h
