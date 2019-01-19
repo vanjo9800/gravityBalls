@@ -57,7 +57,6 @@ def get_rebound_vectors(p1, p2):
     n = p2.position.subtract(p1.position).normalised()
     u1 = p1.velocity.dot(n)
     u2 = p2.velocity.dot(n)
-    print(u1,u2)
     v1 = ((p1.mass-p2.mass)*u1 + 2*p2.mass*u2) / (p1.mass+p2.mass)
     v2 = ((p2.mass-p1.mass)*u2 + 2*p1.mass*u1) / (p1.mass+p2.mass)
     return (p1.velocity.subtract(n.scale(u1-v1)), p2.velocity.subtract(n.scale(u2-v2)))
@@ -87,9 +86,7 @@ class Universe:
             #Bouncing
             for j in range(i):
                 if self.planets[i].intersects(self.planets[j]):
-                    print(i, j)
                     vi, vj = get_rebound_vectors(self.planets[i], self.planets[j])
-                    print(self.planets[i].velocity, vi)
                     self.planets[i].velocity = vi
                     self.planets[j].velocity = vj
         
