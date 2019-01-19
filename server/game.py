@@ -3,27 +3,12 @@ import time
 import asyncio
 import pygame
 
-(width, height) = (600,600)
+(width, height) = (1000,1000)
 physics_rate = 500
 
 universe = Universe(width, height, 1/physics_rate)
 
-async def physics_loop():
-    global universe
-    global physics_rate
-
-    while True:
-        cur_time = time.time()
-        universe.run_loop()
-        await asyncio.sleep(1/physics_rate - time.time() + cur_time)
-
-
 async def render_game():
-    global width
-    global height
-    global physics_rate
-    global universe
-
     running = True
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((width, height))
@@ -51,4 +36,4 @@ async def render_game():
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(physics_loop())
+    loop.run_until_complete(render_game())

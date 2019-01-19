@@ -1,4 +1,5 @@
 import math
+import json
 
 class Vector:
     def __init__(self, x=0, y=0):
@@ -70,6 +71,13 @@ class Universe:
         self.height = h
 
         self.clock_tick = r
+
+    def get_json(self):
+        data = []
+        for i,p in enumerate(self.planets):
+            data.append({'x': p.position.x, 'y': p.position.y, 'r': p.radius})
+        return json.dumps(data)
+
 
     def run_loop(self):
 
