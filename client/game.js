@@ -6,6 +6,7 @@ engineSocket.onmessage = function (event) {
 
 var width = window.innerWidth;
 var height = window.innerHeight;
+var startedGame = false;
 //var clicked = false;
 
 function circle() {
@@ -47,7 +48,7 @@ for (var i = 0; i < initNumber; i++) {
 
 
 function update() {
-    //if (!clicked) return;
+    if (!startedGame) return;
     for (var i = 0; i < initNumber; i++) {
         circles[i].move();
         if (circles[i].y + circles[i].r > canvas.height) {
@@ -78,6 +79,8 @@ function update() {
 }
 
 function draw() {
+    if (!startedGame) return;
+
     context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
     // if (!clicked) {
@@ -91,12 +94,17 @@ function draw() {
     }
 }
 
+function clearScreen() {
+    document.getElementById("startscreen").style.display = "none";
+    document.getElementById("gamescreen").style.display = "block";
+    startedGame = true;
+    console.log("Zfdsd");
+}
+
 function keyup(key) {
     // Show the pressed keycode in the console
-    console.log("Pressed", key);
 }
 
 function mouseup() {
     // Show coordinates of mouse on click
-    console.log("Mouse clicked at", mouseX, mouseY);
 }
