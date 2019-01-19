@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <title>Gravity Game</title>
     <style>
         body,
         canvas {
@@ -10,12 +11,25 @@
             overflow: hidden;
         }
     </style>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body onload="init()">
-    <!-- <div type="button" style="z-index:2; position:absolute; top:50%; left:50%" id="snapchat-login"></div> -->
-    <canvas id="gameplay" style="z-index:1"></canvas>
     <script src="game.js"></script>
+    <div id="startscreen">
+        <div id="title">
+            <h1 id="title-text">GRAVITY GAMEEE</h1>
+        </div>
+        <div class="container" id="arrowDiv">
+            <a data-scroll class="arrow" href="javascript:clearScreen()">
+                <!-- <div class="arrow"></div> -->
+            </a>
+        </div>
+    </div>
+    <div id="gamescreen" style="display:none">
+        <canvas id="gameplay" style="z-index:1"></canvas>
+        <!-- <div type="button" style="z-index:2; position:absolute; top:50%; left:50%" id="snapchat-login"></div> -->
+    </div>
     <!-- <script src="snapchat-login.js"></script> -->
     <script>
         if (endlessCanvas == undefined) {
