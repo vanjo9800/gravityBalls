@@ -4,7 +4,7 @@ import time
 
 import game
 
-send_rate = 1
+send_rate = 30
 
 async def consumer_handler(websocket, path):
     async for message in websocket:

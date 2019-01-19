@@ -30,13 +30,13 @@ class Vector:
         return Vector(self.x,self.y).scale(1/self.mod())
 
 class Planet:
-    def __init__(self, p, v, r=1, m=1,id):
+    def __init__(self, p, v, nid, r=1, m=1):
         self.position = p
         self.velocity = v
         self.radius = r
         self.mass = m
         self.elasticity = 0.9
-        self.id=id
+        self.nid=nid
 
     def intersects(self,p):
         return self.position.subtract(p.position).mod2() < math.pow(self.radius + p.radius,2)
@@ -67,8 +67,8 @@ def get_rebound_vectors(p1, p2):
 class Universe:
     def __init__(self, w, h, r):
         p1 = Planet(Vector(30,150), Vector(20,100), 30,0)
-        p2 = Planet(Vector(100,50), Vector(2,200), 50,2,1)
-        p3 = Planet(Vector(300,50), Vector(2,200), 50,2,2)
+        p2 = Planet(Vector(100,50), Vector(2,200), 1, 50,2)
+        p3 = Planet(Vector(300,50), Vector(2,200), 2, 50,2)
         self.planets = [p1,p2,p3]
         self.width = w
         self.height = h
@@ -79,7 +79,7 @@ class Universe:
     def get_json(self):
         data = []
         for i,p in enumerate(self.planets):
-            data.append({'x': p.position.x, 'y': p.position.y, 'r': p.radius,'id':p.id})
+            data.append({'x': p.position.x, 'y': p.position.y, 'r': p.radius,'id':p.nid})
         return json.dumps(data)
 
     def run_loop(self):
