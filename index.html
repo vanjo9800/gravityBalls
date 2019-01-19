@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body,
+        canvas {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body onload="init()">
+    <div type="button" style="z-index:2; position:absolute; top:50%; left:50%" id="snapchat-login"></div>
+    <canvas id="gameplay" style="z-index:1"></canvas>
+    <script src="game.js"></script>
+    <script src="snapchat-login.js"></script>
+    <script>
+        if (endlessCanvas == undefined) {
+            var endlessCanvas = false;
+        }
+        var canvas = document.getElementById("gameplay");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.onresize = function () {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        var context = canvas.getContext("2d");
+        context.fillStyle = "#0000ff";
+        // global variables with mouse coordinates
+        var mouseX = 0;
+        var mouseY = 0;
+
+        var isKeyPressed = [];
+        for (i = 0; i < 256; ++i) {
+            isKeyPressed.push(0);
+        }
+
+        var reqAnimationFrame =
+            window.requestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function (callback) {
+                setTimeout(callback, 1000 / 30);
+            };
+
+        function redraw() {
+            //   context.clearRect(0, 0, canvas.width, canvas.height);
+            context.globalAlpha = 1;
+
+            // draw grid
+            //context.fillStyle = "#FF0000";
+            context.font = "10px Arial";
+            if (typeof gridSize != "undefined" && gridSize >= 25) {
+                context.fillText(0, 4, 10);
+                context.beginPath();
+                for (i = gridSize; i < canvas.width; i += gridSize) {
+                    context.moveTo(i, 0);
+                    context.lineTo(i, canvas.height);
+                    context.fillText(i, i + 4, 10);
+                }
+                for (i = gridSize; i < canvas.height; i += gridSize) {
+                    context.moveTo(0, i);
+                    context.lineTo(canvas.width, i);
+                    context.fillText(i, 4, i + 10);
+                }
+                context.stroke();
+            }
+
+            draw(); // call progammer's draw() function
+
+            reqAnimationFrame(redraw);
+        };
+
+        function callupdate() {
+            update(); // call programmer's update() function
+            setTimeout(callupdate, 10); // and 10 ms after that ...
+        };
+
+        function init() {
+            if ('ontouchstart' in window || navigator.maxTouchPoints) {
+                isMobile = true;
+                window.addEventListener("touchstart", function (e) {
+                    var touchobj = e.changedTouches[0];
+                    mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
+                    mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
+                    mousedown();
+                });
+
+                window.addEventListener("touchend", function (e) {
+                    var touchobj = e.changedTouches[0];
+                    mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
+                    mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
+                    mouseup();
+                });
+                window.addEventListener("touchmove", function (e) {
+                    var touchobj = e.changedTouches[0];
+                    mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
+                    mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
+                });
+            } else {
+                window.addEventListener("mousemove", function (e) {
+                    mouseX = e.pageX - canvas.offsetLeft;
+                    mouseY = e.pageY - canvas.offsetTop;
+                });
+
+                if (typeof mousemove != "undefined") {
+                    window.addEventListener("mousemove", mousemove);
+                }
+                if (typeof mouseup != "undefined") {
+                    window.addEventListener("mouseup", mouseup);
+                }
+                if (typeof mousedown != "undefined") {
+                    window.addEventListener("mousedown", mousedown);
+                }
+
+                if (typeof keydown != "undefined") {
+                    window.addEventListener("keydown", function (e) {
+                        isKeyPressed[e.keyCode] = 1;
+                        keydown(e.keyCode);
+                    });
+                } else {
+                    window.addEventListener("keydown", function (e) {
+                        isKeyPressed[e.keyCode] = 1;
+                    });
+                }
+                if (typeof keyup != "undefined") {
+                    window.addEventListener("keyup", function (e) {
+                        isKeyPressed[e.keyCode] = 0;
+                        keyup(e.keyCode);
+                    });
+                } else {
+                    window.addEventListener("keyup", function (e) {
+                        isKeyPressed[e.keyCode] = 0;
+                    });
+                }
+            }
+            if (typeof draw == "undefined") {
+                redraw = function () {
+                    //                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    context.globalAlpha = 1;
+                    context.fillStyle = "#FF0000";
+                    context.font = "20px Arial";
+                    context.fillText("Press <F12> for error info!", 40, 40);
+                };
+            }
+            redraw();
+            callupdate();
+        };
+    </script>
+</body>
+
+</html>
