@@ -1,4 +1,5 @@
 import math
+import json
 
 class Vector:
     def __init__(self, x=0, y=0):
@@ -35,7 +36,7 @@ class Planet:
         self.velocity = v
         self.radius = r
         self.mass = m
-        self.elasticity = 0.9
+        self.elasticity = 1
         self.nid=nid
 
     def intersects(self,p):
@@ -72,7 +73,7 @@ class Universe:
         self.planets = [p1,p2,p3]
         self.width = w
         self.height = h
-        self.elasticity = 0.75
+        self.elasticity = 0.9
 
         self.clock_tick = r
 
