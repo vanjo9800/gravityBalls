@@ -35,7 +35,7 @@ class Planet:
         self.velocity = v
         self.radius = r
         self.mass = m
-        self.elasticity = 0.9
+        self.elasticity = 1
 
     def intersects(self,p):
         return self.position.subtract(p.position).mod2() < math.pow(self.radius + p.radius,2)
@@ -47,10 +47,9 @@ class Planet:
     def attract(self,otherp,clock_tick):
         between = self.position.subtract(otherp.position)
         dist = between.mod()
-        force = 5000*((self.mass * otherp.mass / dist ** 2)**1)
+        force = 5000*(self.mass * otherp.mass / dist ** 2)
         self.accelerate(between.scale(-force),clock_tick)
         otherp.accelerate(between.scale(force),clock_tick)
-        #Scale force to clock tick?
         
     def move(self,clock_tick):
         self.position = self.position.add(self.velocity.scale(clock_tick))
@@ -67,7 +66,7 @@ class Universe:
     def __init__(self, w, h, r):
         p1 = Planet(Vector(30,150), Vector(20,100), 30)
         p2 = Planet(Vector(100,50), Vector(2,200), 50,2)
-        p3 = Planet(Vector(300,50), Vector(2,200), 50,2)
+        p3 = Planet(Vector(200,50), Vector(2,200), 50,2)
         self.planets = [p1,p2,p3]
         self.width = w
         self.height = h
@@ -89,6 +88,21 @@ class Universe:
             elasticity = self.elasticity
 
             ##Boundary Checkr
+            '''
+
+            if pos.x > self.width - rad:
+                pos.x = 2*(self.width-rad) - pos.x
+                self.planets[i].velocity.x *= -elasticity
+            elif pos.x < rad:
+                pos.x = 2*rad - pos.x
+                self.planets[i].velocity.x *= -elasticity
+            if pos.y > self.height - rad:
+                pos.y = 2*(self.height-rad) - pos.y
+                self.planets[i].velocity.y *= -elasticity
+            elif pos.y < rad:
+                pos.y = 2*rad - pos.y
+                self.planets[i].velocity.y *= -elasticity
+            '''
             if pos.x - rad< 0: 
                 self.planets[i].velocity.x *= -elasticity
                 pos.x = 2*rad - pos.x
@@ -107,17 +121,13 @@ class Universe:
                 if self.planets[i].intersects(self.planets[j]):
                     firstone = self.planets[i]
                     secondone = self.planets[j]
-                    vi, vj = get_rebound_vectors(firstone,secondone)
-                    elasticity = firstone.elasticity * secondone.elasticity
-                    firstone.velocity = vi.scale(elasticity)
-                    secondone.velocity = vj.scale(elasticity)
+                    vi, vj = get_rebound_vectors(self.planets[i], self.planets[j])
+                    elasticity = self.planets[i].elasticity * self.planets[j].elasticity
+                    self.planets[i].velocity = vi.scale(elasticity)
+                    self.planets[j].velocity = vj.scale(elasticity)
 
                     ##Overlapping fix
-                    dist = firstone.position.subtract(secondone.position).mod()
-                    overlap = 0.2*(firstone.radius+secondone.radius-dist+1)
-                    firstone.position.add(firstone.velocity.scale(-1).scale(overlap))
-                    secondone.position.add(secondone.velocity.scale(-1).scale(overlap))
-
+                    overlap = 0.5*(self.planets[i].radius+self.planets[i].radius-)
                 if (i!=j):
                     self.planets[i].attract(self.planets[j],self.clock_tick)
 
