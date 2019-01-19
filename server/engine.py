@@ -39,6 +39,20 @@ class Planet:
     def intersects(self,p):
         return self.position.subtract(p.position).mod2() < math.pow(self.radius + p.radius,2)
 
+    def accelerate(self,otherp):
+        self.velocity = self.velocity.add(otherp)
+        #adds to velocity vector
+
+    def attract(self,otherp):
+        between = self.position.subtract(otherp.position)
+        dist = between.mod()
+        force = 100*(self.mass * otherp.mass / dist ** 2)
+        self.accelerate(between.scale(-force))
+        otherp.accelerate(between.scale(force))
+        
+    def move(self,clock_tick):
+        self.position = self.position.add(self.velocity.scale(clock_tick))
+
 def get_rebound_vectors(p1, p2):
     n = p2.position.subtract(p1.position).normalised()
     u1 = p1.velocity.dot(n)
@@ -50,7 +64,9 @@ def get_rebound_vectors(p1, p2):
 
 class Universe:
     def __init__(self, w, h, r):
-        self.planets = [Planet(Vector(100,100), Vector(0,100), 30), Planet(Vector(100,200), Vector(2,200), 50,2)]
+        p1 = Planet(Vector(0,100), Vector(20,100), 30)
+        p2 = Planet(Vector(100,0), Vector(2,200), 50,2)
+        self.planets = [p1,p2]
         self.width = w
         self.height = h
 
@@ -61,11 +77,14 @@ class Universe:
         for i in range(len(self.planets)):
             pos = self.planets[i].position
             rad = self.planets[i].radius
+
+            ##Boundary Checkr
             if pos.x - rad < 0: self.planets[i].velocity.x *= -1
             if pos.x + rad > self.width: self.planets[i].velocity.x *= -1
             if pos.y - rad < 0: self.planets[i].velocity.y *= -1
             if pos.y + rad > self.height: self.planets[i].velocity.y *= -1
 
+            #Bouncing
             for j in range(i):
                 if self.planets[i].intersects(self.planets[j]):
                     print(i, j)
@@ -73,8 +92,18 @@ class Universe:
                     print(self.planets[i].velocity, vi)
                     self.planets[i].velocity = vi
                     self.planets[j].velocity = vj
+        
+            for j in range(i,len(self.planets)):
+                if i!=j:
+                    self.planets[i].attract(self.planets[j])
 
-            self.planets[i].position = pos.add(self.planets[i].velocity.scale(self.clock_tick))
+            #pos update
+            self.planets[i].move(self.clock_tick)
+            
+            #self.planets[i].position = pos.add(self.planets[i].velocity.scale(self.clock_tick))
+            
+
+
 
 
 
