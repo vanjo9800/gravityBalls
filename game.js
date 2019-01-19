@@ -6,7 +6,7 @@ engineSocket.onmessage = function (event) {
 
 var width = window.innerWidth;
 var height = window.innerHeight;
-var clicked = false;
+//var clicked = false;
 
 function circle() {
     this.x = 0;
@@ -47,7 +47,7 @@ for (var i = 0; i < initNumber; i++) {
 
 
 function update() {
-    if (!clicked) return;
+    //if (!clicked) return;
     for (var i = 0; i < initNumber; i++) {
         circles[i].move();
         if (circles[i].y + circles[i].r > canvas.height) {
@@ -80,12 +80,12 @@ function update() {
 function draw() {
     context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    if (!clicked) {
-        canvas.style.webkitFilter = "blur(10px)";
-        return;
-    } else {
-        canvas.style.webkitFilter = "blur(0px)";
-    }
+    // if (!clicked) {
+    //     canvas.style.webkitFilter = "blur(10px)";
+    //     return;
+    // } else {
+    //     canvas.style.webkitFilter = "blur(0px)";
+    // }
     for (var i = 0; i < circles.length; i++) {
         circles[i].draw();
     }
