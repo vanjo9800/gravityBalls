@@ -98,7 +98,7 @@ class Universe:
         selected_planet.radius += 1
         selected_planet.mass += (math.pi * (selected_planet.radius**2))
 
-    def add_planet(self,planet_id):
+    def add_planet(self):
         new_id = random.randint(1,1000)
         ids = [x.nid for x in self.planets]
         ##To make sure Ids are unique lol
