@@ -7,28 +7,34 @@ import game
 
 send_rate = 30
 
-async def consumer_handler(websocket, path):
+async def consumer_handler(websocket, path, pid):
     async for message in websocket:
-        print(message)
+        if message == "+": game.universe.grow(pid)
+        if message == "-": game.universe.shrink(pid)
 
 async def producer_handler(websocket, path):
-    while True:
-        cur_time = time.time()
-        await websocket.send(game.universe.get_json())
-        await asyncio.sleep(1/send_rate - time.time() + cur_time)
+    try:
+        while True:
+            cur_time = time.time()
+            await websocket.send(game.universe.get_json())
+            await asyncio.sleep(1/send_rate - time.time() + cur_time)
+    except websockets.exceptions.ConnectionClosed:
+        print("closing")
+        pass
 
 async def handler(websocket, path):
     pid = game.universe.add_planet()
 
-    consumer_task = asyncio.ensure_future(consumer_handler(websocket, path))
+    consumer_task = asyncio.ensure_future(consumer_handler(websocket, path, pid))
     producer_task = asyncio.ensure_future(producer_handler(websocket, path))
     done, pending = await asyncio.wait(
         [consumer_task, producer_task],
         return_when=asyncio.FIRST_COMPLETED,
     )
+
     for task in pending:
         task.cancel()
-
+    
     game.universe.remove_planet(pid)
 
 
