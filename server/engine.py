@@ -46,14 +46,14 @@ class Planet:
     def intersects(self,p):
         return self.position.subtract(p.position).mod2() < math.pow(self.radius + p.radius,2)
 
-    def accelerate(self,otherp,clock_tick):
-        self.velocity = self.velocity.add(otherp.scale(clock_tick)) 
+    def accelerate(self,force,clock_tick):
+        self.velocity = self.velocity.add(force.scale(clock_tick/self.mass)) 
         #adds to velocity vector
 
     def attract(self,otherp,clock_tick):
         between = self.position.subtract(otherp.position)
         dist = between.mod()
-        force = 0.01*((self.mass * otherp.mass / dist ** 2)**1)
+        force = 1*(self.mass * otherp.mass / dist ** 1.2)
         self.accelerate(between.scale(-force),clock_tick)
         otherp.accelerate(between.scale(force),clock_tick)
         #Scale force to clock tick?
@@ -61,10 +61,10 @@ class Planet:
     def move(self,clock_tick=1):
         self.position = self.position.add(self.velocity.scale(clock_tick))
 
-    def update_mass(self):
+    def update_mass(self, k = 1):
         om = self.mass
         self.mass = self.radius**2
-        self.velocity = self.velocity.scale(om/self.mass)
+        self.velocity = self.velocity.scale(k*om/self.mass+1-k)
 
 def get_rebound_vectors(p1, p2):
     n = p2.position.subtract(p1.position).normalised()
@@ -76,9 +76,9 @@ def get_rebound_vectors(p1, p2):
 
 class Universe:
     def __init__(self, w, h, r):
-        p1 = Planet(Vector(30,150), Vector(20,100),0, 30)
-        p2 = Planet(Vector(100,50), Vector(2,200), 1, 30)
-        p3 = Planet(Vector(300,50), Vector(2,200), 2, 30)
+        p1 = Planet(Vector(30,150), Vector(2,5),0, 30)
+        p2 = Planet(Vector(100,50), Vector(2,-5), 1, 30)
+        p3 = Planet(Vector(300,50), Vector(0,10), 2, 30)
         self.planets = [p1,p2,p3]
         self.width = w
         self.height = h
@@ -97,7 +97,7 @@ class Universe:
         selected_planet = [x for x in self.planets if x.nid==planet_id][0]
         if (selected_planet.radius - 5 < 20): return
         selected_planet.radius -= 5
-        selected_planet.update_mass()
+        selected_planet.update_mass(0.2)
 
     def grow(self,planet_id):
         selected_planet = [x for x in self.planets if x.nid==planet_id][0]
@@ -106,7 +106,7 @@ class Universe:
         selected_planet.update_mass()
 
     def add_planet(self):
-        new_id = random.randint(1,1000)
+        new_id = random.randint(0,100000)
         ids = [x.nid for x in self.planets]
         ##To make sure Ids are unique lol
         while new_id in ids:

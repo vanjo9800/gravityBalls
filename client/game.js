@@ -19,9 +19,9 @@ function circle() {
         this.dt--;
     };
     this.calculateColour = function (id) {
-        var r = parseInt(id*13753/4) % 255;
-        var g = parseInt(id*25732/5) % 255;
-        var b = parseInt(id*36294/2) % 255;
+        var r = parseInt(id*13753/4) % 206 + 50;
+        var g = parseInt(id*25732/5) % 206 + 50;
+        var b = parseInt(id*36294/2) % 206 + 50;
         return "rgb(" + r + "," + g + "," + b +")";
     }
     this.draw = function (id) {

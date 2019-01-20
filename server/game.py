@@ -3,7 +3,7 @@ import time
 import asyncio
 import pygame
 
-(width, height) = (500,500)
+(width, height) = (900,900)
 physics_rate = 500
 
 universe = Universe(width, height, 1/physics_rate)
