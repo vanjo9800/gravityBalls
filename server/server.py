@@ -1,3 +1,4 @@
+import sys
 import asyncio
 import websockets
 import time
@@ -17,6 +18,8 @@ async def producer_handler(websocket, path):
         await asyncio.sleep(1/send_rate - time.time() + cur_time)
 
 async def handler(websocket, path):
+    pid = game.universe.add_planet()
+
     consumer_task = asyncio.ensure_future(consumer_handler(websocket, path))
     producer_task = asyncio.ensure_future(producer_handler(websocket, path))
     done, pending = await asyncio.wait(
@@ -26,9 +29,16 @@ async def handler(websocket, path):
     for task in pending:
         task.cancel()
 
+    game.universe.remove_planet(pid)
 
-start_server = websockets.serve(handler, 'localhost', 8765)
+
+start_server = websockets.serve(handler, '', 8765)
+
+if len(sys.argv) > 1 and sys.argv[1] == "-visual":
+    game_loop = game.render_game()
+else:
+    game_loop = game.physics_loop()
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(asyncio.gather(start_server, game.render_game()))
+loop.run_until_complete(asyncio.gather(start_server, game_loop))
 

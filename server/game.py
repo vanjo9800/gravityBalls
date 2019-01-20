@@ -8,7 +8,14 @@ physics_rate = 500
 
 universe = Universe(width, height, 1/physics_rate)
 
-async def render_game():
+async def physics_loop():
+    while True:
+        cur_time = time.time()
+        universe.run_loop()
+        await asyncio.sleep(1/physics_rate - time.time() + cur_time)
+
+
+async def render_loop():
     running = True
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((width, height))
