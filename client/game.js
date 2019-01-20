@@ -110,14 +110,10 @@ function clearScreen() {
 function keyup(key) {
     console.log(key);
     if (isKeyPressed[38]) { //up
-        engineSocket.send(JSON.serialize({
-            op: +1
-        }));
+        engineSocket.send("+");
     }
 
     if (isKeyPressed[40]) { //down
-        engineSocket.send(JSON.serialize({
-            op: -1
-        }));
+        engineSocket.send("-");
     }
 }
