@@ -1,4 +1,5 @@
 var engineSocket = new WebSocket("ws://localhost:8765");
+var startedGame = false;
 
 function circle() {
     this.x = 0;
@@ -6,9 +7,14 @@ function circle() {
     this.r = 10;
     this.dx = 0;
     this.dy = 0;
+    this.dr = 0;
+    this.dt = 0;
     this.move = function () {
+        if (this.dt == 0) return;
         this.x += this.dx;
         this.y += this.dy;
+        this.r += this.dr;
+        this.dt--;
     };
     this.moveBack = function () {
         this.x += this.dx;
@@ -26,22 +32,39 @@ function circle() {
     };
 }
 
-var circles = [];
+var circles = [],
+    myID = undefined,
+    lastTimestamp = 0;
 engineSocket.onmessage = function (event) {
-    circles = [];
+    if (!startedGame) return;
+    /*if(myID == undefined){
+        myID = JSON.parse(event.data);
+        return;
+    }*/
+    var currentTimestamp = new Date().getMilliseconds();
+    var dt = (currentTimestamp - lastTimestamp) / 10; //update run interval
+    //console.log(dt);
     var balls = JSON.parse(event.data);
     for (var i = 0; i < balls.length; i++) {
-        circles[i] = new circle();
-        circles[i].x = balls[i].x;
-        circles[i].y = balls[i].y;
-        circles[i].r = balls[i].r;
+        if (circles[balls[i].id] == undefined) {
+            circles[balls[i].id] = new circle();
+            circles[balls[i].id].x = balls[i].x;
+            circles[balls[i].id].y = balls[i].y;
+            circles[balls[i].id].r = balls[i].r;
+        } else {
+            circles[balls[i].id].dx = (balls[i].x - circles[balls[i].id].x) / dt;
+            circles[balls[i].id].dy = (balls[i].y - circles[balls[i].id].y) / dt;
+            circles[balls[i].id].dr = (balls[i].r - circles[balls[i].id].r) / dt;
+            circles[balls[i].id].dt = dt;
+            console.log(circles[balls[i].id].dx); //, circles[balls[i].id].dy, circles[balls[i].id].dr);
+        }
     }
+    lastTimestamp = currentTimestamp;
     console.log(balls);
 }
 
 var width = window.innerWidth;
 var height = window.innerHeight;
-var startedGame = false;
 //var clicked = false;
 
 
@@ -58,33 +81,33 @@ var startedGame = false;
 
 function update() {
     if (!startedGame) return;
-    // for (var i = 0; i < initNumber; i++) {
-    //     circles[i].move();
-    //     if (circles[i].y + circles[i].r > canvas.height) {
-    //         circles[i].y = canvas.height - circles[i].r;
-    //         circles[i].dy = -circles[i].dy;
-    //     }
-    //     if (circles[i].y + circles[i].r < 0) {
-    //         circles[i].y = circles[i].r;
-    //         circles[i].dy = -circles[i].dy;
-    //     }
-    //     if (circles[i].x + circles[i].r > canvas.width) {
-    //         circles[i].x = canvas.width - circles[i].r;
-    //         circles[i].dx = -circles[i].dx;
-    //     }
-    //     if (circles[i].x + circles[i].r < 0) {
-    //         circles[i].x = circles[i].r;
-    //         circles[i].dx = -circles[i].dx;
-    //     }
-    //     var collision = false;
-    //     for (var j = 0; j < initNumber; j++) {
-    //         if (i == j) continue;
-    //         if (circles[i].collidingWith(circles[j])) {
-    //             collision = true;
-    //         }
-    //     }
-    //     if (collision) circles[i].moveBack();
-    // }
+    for (var id in Object.keys(circles)) {
+        circles[id].move();
+        //     if (circles[i].y + circles[i].r > canvas.height) {
+        //         circles[i].y = canvas.height - circles[i].r;
+        //         circles[i].dy = -circles[i].dy;
+        //     }
+        //     if (circles[i].y + circles[i].r < 0) {
+        //         circles[i].y = circles[i].r;
+        //         circles[i].dy = -circles[i].dy;
+        //     }
+        //     if (circles[i].x + circles[i].r > canvas.width) {
+        //         circles[i].x = canvas.width - circles[i].r;
+        //         circles[i].dx = -circles[i].dx;
+        //     }
+        //     if (circles[i].x + circles[i].r < 0) {
+        //         circles[i].x = circles[i].r;
+        //         circles[i].dx = -circles[i].dx;
+        //     }
+        //     var collision = false;
+        //     for (var j = 0; j < initNumber; j++) {
+        //         if (i == j) continue;
+        //         if (circles[i].collidingWith(circles[j])) {
+        //             collision = true;
+        //         }
+        //     }
+        //     if (collision) circles[i].moveBack();
+    }
 }
 
 function draw() {
@@ -98,8 +121,8 @@ function draw() {
     // } else {
     //     canvas.style.webkitFilter = "blur(0px)";
     // }
-    for (var i = 0; i < circles.length; i++) {
-        circles[i].draw();
+    for (var id in Object.keys(circles)) {
+        circles[id].draw();
     }
 }
 
@@ -111,8 +134,18 @@ function clearScreen() {
 
 function keyup(key) {
     // Show the pressed keycode in the console
-}
+    console.log(key);
+    if (key == 38) { //up
+        engineSocket.send(JSON.serialize({
+            id: myID,
+            op: +1
+        }));
+    }
 
-function mouseup() {
-    // Show coordinates of mouse on click
+    if (key == 40) { //down
+        engineSocket.send(JSON.serialize({
+            id: myID,
+            op: -1
+        }));
+    }
 }
