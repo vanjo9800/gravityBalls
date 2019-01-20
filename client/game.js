@@ -16,10 +16,16 @@ function circle() {
         this.r += this.dr;
         this.dt--;
     };
-    this.draw = function () {
+    this.calculateColour = function (id) {
+        var r = parseInt(id*13753/4) % 255;
+        var g = parseInt(id*25732/5) % 255;
+        var b = parseInt(id*36294/2) % 255;
+        return "rgb(" + r + "," + g + "," + b +")";
+    }
+    this.draw = function (id) {
         context.beginPath();
         context.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
-        context.fillStyle = "white"; //Circles colour
+        context.fillStyle = this.calculateColour(id); //Circles colour
         context.fill();
         context.closePath();
     };
@@ -106,7 +112,7 @@ function draw() {
     //     canvas.style.webkitFilter = "blur(0px)";
     // }
     for (var id in circles) {
-        circles[id].draw();
+        circles[id].draw(id);
     }
 }
 
