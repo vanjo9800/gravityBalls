@@ -109,13 +109,13 @@ function clearScreen() {
 
 function keyup(key) {
     console.log(key);
-    if (key == 38) { //up
+    if (isKeyPressed[38]) { //up
         engineSocket.send(JSON.serialize({
             op: +1
         }));
     }
 
-    if (key == 40) { //down
+    if (isKeyPressed[40]) { //down
         engineSocket.send(JSON.serialize({
             op: -1
         }));
