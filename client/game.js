@@ -1,4 +1,6 @@
-var engineSocket = new WebSocket("ws://localhost:8765");
+var ws_link = "ws://" + window.location.hostname + ":8765";
+console.log(ws_link);
+var engineSocket = new WebSocket(ws_link);
 var startedGame = false;
 
 function circle() {
