@@ -3,6 +3,13 @@ console.log(ws_link);
 var engineSocket = new WebSocket(ws_link);
 var startedGame = false;
 
+function calculateColour (id) {
+    var r = parseInt(id*13753/4) % 206 + 50;
+    var g = parseInt(id*25732/5) % 206 + 50;
+    var b = parseInt(id*36294/2) % 206 + 50;
+    return "rgb(" + r + "," + g + "," + b +")";
+}
+
 function circle() {
     this.x = 0;
     this.y = 0;
@@ -11,6 +18,7 @@ function circle() {
     this.dy = 0;
     this.dr = 0;
     this.dt = 0;
+    this.score = 0;
     this.move = function () {
         if (this.dt <= 0.0) return;
         this.x += this.dx;
@@ -18,16 +26,10 @@ function circle() {
         this.r += this.dr;
         this.dt--;
     };
-    this.calculateColour = function (id) {
-        var r = parseInt(id*13753/4) % 206 + 50;
-        var g = parseInt(id*25732/5) % 206 + 50;
-        var b = parseInt(id*36294/2) % 206 + 50;
-        return "rgb(" + r + "," + g + "," + b +")";
-    }
     this.draw = function (id) {
         context.beginPath();
         context.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
-        context.fillStyle = this.calculateColour(id); //Circles colour
+        context.fillStyle = calculateColour(id); //Circles colour
         context.fill();
         context.closePath();
     };
@@ -48,8 +50,7 @@ engineSocket.onmessage = function (event) {
         console.log(event.data.substring(1));
         var id = parseInt(event.data.substring(1));
         console.log(id);
-        var c = new circle();
-        var nodecolour = c.calculateColour(id);
+        var nodecolour = calculateColour(id);
         console.log(nodecolour);
         document.getElementById("title-text").style.color = nodecolour;
         return;
@@ -71,6 +72,7 @@ engineSocket.onmessage = function (event) {
                 circles[balls[i].id].dr = (balls[i].r - circles[balls[i].id].r) / dt;
                 circles[balls[i].id].dt = dt;
             }
+            circles[balls[i].id].score = balls[i].s;
         }
         lastTimestamp = currentTimestamp;
     }
@@ -78,38 +80,12 @@ engineSocket.onmessage = function (event) {
 
 function requestStart() {
     engineSocket.send("s");
-    
-
 }
 
 function update() {
     if (!startedGame) return;
     for (var id in circles) {
         circles[id].move();
-        //     if (circles[i].y + circles[i].r > canvas.height) {
-        //         circles[i].y = canvas.height - circles[i].r;
-        //         circles[i].dy = -circles[i].dy;
-        //     }
-        //     if (circles[i].y + circles[i].r < 0) {
-        //         circles[i].y = circles[i].r;
-        //         circles[i].dy = -circles[i].dy;
-        //     }
-        //     if (circles[i].x + circles[i].r > canvas.width) {
-        //         circles[i].x = canvas.width - circles[i].r;
-        //         circles[i].dx = -circles[i].dx;
-        //     }
-        //     if (circles[i].x + circles[i].r < 0) {
-        //         circles[i].x = circles[i].r;
-        //         circles[i].dx = -circles[i].dx;
-        //     }
-        //     var collision = false;
-        //     for j = 0; j < initNumber; j++) {
-        //         if (i == j) continue;
-        //         if (circles[i].collidingWith(circles[j])) {
-        //             collision = true;
-        //         }
-        //     }
-        //     if (collision) circles[i].moveBack();
     }
     if (isKeyPressed[38]) { //up
         console.log("up")
@@ -140,6 +116,18 @@ function draw() {
     // } else {
     //     canvas.style.webkitFilter = "blur(0px)";
     // }
+    var keys = Object.keys(circles).sort();
+    for (var i = 0; i < keys.length; i++) {
+        context.font = "120px Courier New";
+        context.globalAlpha = 0.5;
+        context.fillStyle = calculateColour(keys[i]);
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(circles[keys[i]].score.toString(), (0.5 + parseFloat(i))*(900.0 / parseFloat(keys.length)), 450); 
+        console.log(parseFloat(i), keys.length);
+        console.log((0.5 + parseFloat(i)) * 900.0 / parseFloat(keys.length)); 
+    }
+
     for (var id in circles) {
         circles[id].draw(id);
     }
