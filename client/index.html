@@ -42,7 +42,11 @@
         window.onresize = function () {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            canvas.getContext("2d").scale(canvas.width / 900, canvas.width / 900);
+            if (canvas.height > canvas.width) {
+                canvas.getContext("2d").scale(canvas.width / 900, canvas.width / 900);
+            } else {
+                canvas.getContext("2d").scale(canvas.height / 900, canvas.height / 900);
+            }
         };
         var context = canvas.getContext("2d");
         context.scale(canvas.width / 900, canvas.width / 900);
