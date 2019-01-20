@@ -85,9 +85,11 @@ function update() {
     }
     if (isKeyPressed[38]) { //up
         engineSocket.send("+");
+        isKeyPressed[38] = false;
     }
     if (isKeyPressed[40]) { //down
         engineSocket.send("-");
+        isKeyPressed[40] = false;
     }
 }
 
