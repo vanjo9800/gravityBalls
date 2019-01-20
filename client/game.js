@@ -45,9 +45,12 @@ engineSocket.onmessage = function (event) {
         return;
     }
     if (event.data.startsWith("i")) {
-        var id = parseInt(event.data.trim("i"));
+        console.log(event.data.substring(1));
+        var id = parseInt(event.data.substring(1));
+        console.log(id);
         var c = new circle();
         var nodecolour = c.calculateColour(id);
+        console.log(nodecolour);
         document.getElementById("title-text").style.color = nodecolour;
         return;
     }
@@ -124,6 +127,12 @@ function draw() {
 
     context.fillStyle = "black";
     context.fillRect(0, 0, 900, 900);
+
+    context.beginPath();
+    context.arc(450, 450, 449, 0, 2.0 * Math.PI, false);
+    context.lineWidth = 2;
+    context.strokeStyle = '#FFFFFF';
+    context.stroke();
 
     // if (!clicked) 
     //     canvas.style.webkitFilter = "blur(10px)";

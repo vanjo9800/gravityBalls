@@ -157,7 +157,7 @@ class Universe:
                 v = self.planets[i].velocity
                 u = n.scale(v.dot(n))
                 self.planets[i].velocity = v.subtract(n.scale((1+self.elasticity)*v.dot(n)))
-                pos = pos.subtract(n.scale(cv.mod() + rad - self.map_radius))
+                self.planets[i].position = pos.subtract(n.scale(cv.mod() + rad - self.map_radius))
 
             # bouncing
             for j in range(i):

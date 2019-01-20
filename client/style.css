@@ -29,14 +29,14 @@ body {
     width: 5vw;
     border-style: solid;
     border-color: white;
-    border-width: 0px 2.5px 2.5px 0px;
+    border-width: 0px 5px 5px 0px;
     transform: rotate(45deg);
     transition: border-width 150ms ease-in-out;
 }
 
 .arrow:hover {
-    border-bottom-width: 5px;
-    border-right-width: 5px;
+    border-bottom-width: 8px;
+    border-right-width: 8px;
 }
 
 .container {
