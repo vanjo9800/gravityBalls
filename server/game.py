@@ -3,10 +3,11 @@ import time
 import asyncio
 import pygame
 
-(width, height) = (900,900)
+radius = 450
+(width, height) = (2*radius,2*radius)
 physics_rate = 500
 
-universe = Universe(width, height, 1/physics_rate)
+universe = Universe(radius, 1/physics_rate)
 
 competition_mode = True
 game_active = not competition_mode

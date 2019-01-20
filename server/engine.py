@@ -1,7 +1,6 @@
 import math
 import json
 import random
-import game
 
 class Vector:
     def __init__(self, x=0, y=0):
@@ -44,6 +43,7 @@ class Planet:
         self.mass = r**2
         self.elasticity = 1
         self.nid=nid
+        self.num_boundaries = 0
 
     def intersects(self,p):
         return self.position.subtract(p.position).mod2() < math.pow(self.radius + p.radius,2)
@@ -77,7 +77,7 @@ def get_rebound_vectors(p1, p2):
     return (p1.velocity.subtract(n.scale(u1-v1)), p2.velocity.subtract(n.scale(u2-v2)))
 
 class Universe:
-    def __init__(self, w, h, r, extras=False):
+    def __init__(self, R, r, extras=False):
         if extras:
             p1 = Planet(Vector(30,150), Vector(2,5),1, 30)
             p2 = Planet(Vector(100,50), Vector(2,-5), 500, 30)
@@ -85,8 +85,7 @@ class Universe:
             self.planets = [p1,p2,p3]
         else:
             self.planets = []
-        self.width = w
-        self.height = h
+        self.map_radius = R
         self.elasticity = 0.95
 
         self.clock_tick = r
@@ -94,7 +93,7 @@ class Universe:
     def get_json(self):
         data = []
         for i,p in enumerate(self.planets):
-            data.append({'x': p.position.x, 'y': p.position.y, 'r': p.radius,'id':p.nid})
+            data.append({'x': p.position.x, 'y': p.position.y, 'r': p.radius,'id':p.nid, 's':p.num_boundaries})
         return json.dumps(data)
 
     def shrink(self,planet_id):
@@ -102,7 +101,7 @@ class Universe:
         selected_planet = [x for x in self.planets if x.nid==planet_id][0]
         if (selected_planet.radius - 10 < 20): return
         selected_planet.radius -= 10
-        selected_planet.update_mass(0.3)
+        selected_planet.update_mass(0.6);
 
     def grow(self,planet_id):
         selected_planet = [x for x in self.planets if x.nid==planet_id][0]
@@ -119,7 +118,7 @@ class Universe:
         while new_id in ids:
             new_id = random.randint(0,100000)
         
-        p = Vector(self.width/2, self.height/2)
+        p = Vector(self.map_radius, self.map_radius)
         if competition_mode:
             if all(i >= 0 for i in self.player_slots):
                 self.player_slots = [j for i in self.player_slots for j in [i,-1]]
@@ -127,7 +126,7 @@ class Universe:
                 if v < 0:
                     self.player_slots[i] = new_id
                     t = math.pi*(-0.75 - 2*i/len(self.player_slots))
-                    p = p.add(Vector(math.cos(t), math.sin(t)).scale(self.width*0.3))
+                    p = p.add(Vector(math.cos(t), math.sin(t)).scale(self.map_radius*0.6))
                     break
 
         ivel = 50
@@ -150,21 +149,17 @@ class Universe:
             pos = self.planets[i].position
             rad = self.planets[i].radius
 
-            ##Boundary Checkr
-            if pos.x - rad< 0: 
-                self.planets[i].velocity.x *= -self.elasticity
-                pos.x = 2*rad - pos.x
-            if pos.x + rad> self.width: 
-                self.planets[i].velocity.x *= -self.elasticity
-                pos.x = 2*(self.width-rad) - pos.x
-            if pos.y - rad< 0: 
-                self.planets[i].velocity.y *= -self.elasticity
-                pos.y = 2*rad - pos.y
-            if pos.y + rad> self.height: 
-                self.planets[i].velocity.y *= -self.elasticity
-                pos.y = 2*(self.width-rad) - pos.y
+            # circular boundary
+            cv = pos.subtract(Vector(self.map_radius, self.map_radius))
+            if cv.mod() + rad > self.map_radius:
+                self.planets[i].num_boundaries += 1
+                n = cv.normalised()
+                v = self.planets[i].velocity
+                u = n.scale(v.dot(n))
+                self.planets[i].velocity = v.subtract(n.scale((1+self.elasticity)*v.dot(n)))
+                pos = pos.subtract(n.scale(cv.mod() + rad - self.map_radius))
 
-            #Bouncing
+            # bouncing
             for j in range(i):
                 p1 = self.planets[i]
                 p2 = self.planets[j]

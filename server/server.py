@@ -21,9 +21,10 @@ async def consumer_handler(websocket, path, pid):
     except websockets.exceptions.ConnectionClosed:
         pass
 
-async def producer_handler(websocket, path):
+async def producer_handler(websocket, path, pid):
     cur_game_active = False
     try:
+        await websocket.send("i"+str(pid))
         while True:
             cur_time = time.time()
             if not cur_game_active and game.game_active:
@@ -42,7 +43,7 @@ async def handler(websocket, path):
     else: pid = -1
 
     consumer_task = asyncio.ensure_future(consumer_handler(websocket, path, pid))
-    producer_task = asyncio.ensure_future(producer_handler(websocket, path))
+    producer_task = asyncio.ensure_future(producer_handler(websocket, path, pid))
     done, pending = await asyncio.wait(
         [consumer_task, producer_task],
         return_when=asyncio.FIRST_COMPLETED,
@@ -59,10 +60,13 @@ async def handler(websocket, path):
 
 start_server = websockets.serve(handler, '', 8765)
 
-if len(sys.argv) > 1 and "-visual" in sys.argv[1:]:
+if "-visual" in sys.argv[1:]:
     game_loop = game.render_loop()
 else:
     game_loop = game.physics_loop()
+
+if "-casual" in sys.argv[1:]:
+    competition_mode = False
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(asyncio.gather(start_server, game_loop))
