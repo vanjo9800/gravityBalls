@@ -31,6 +31,7 @@ function circle() {
 var circles = [],
     lastTimestamp = 0;
 engineSocket.onmessage = function (event) {
+    circles = [];
     if (!startedGame) return;
     var currentTimestamp = new Date().getMilliseconds();
     var dt = (currentTimestamp - lastTimestamp) / 20; //update run interval
