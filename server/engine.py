@@ -21,6 +21,9 @@ class Vector:
     def dot(self,p):
         return self.x*p.x+self.y*p.y
 
+    def cross(self,p):
+        return self.x*p.y - self.y*p.x
+
     def mod2(self):
         return self.x*self.x + self.y*self.y
 
@@ -54,7 +57,7 @@ class Planet:
         otherp.accelerate(between.scale(force),clock_tick)
         #Scale force to clock tick?
         
-    def move(self,clock_tick):
+    def move(self,clock_tick=1):
         self.position = self.position.add(self.velocity.scale(clock_tick))
 
 def get_rebound_vectors(p1, p2):
@@ -67,7 +70,7 @@ def get_rebound_vectors(p1, p2):
 
 class Universe:
     def __init__(self, w, h, r):
-        p1 = Planet(Vector(30,150), Vector(20,100),0, 30,0)
+        p1 = Planet(Vector(30,150), Vector(20,100),0, 30,1)
         p2 = Planet(Vector(100,50), Vector(2,200), 1, 50,2)
         p3 = Planet(Vector(300,50), Vector(2,200), 2, 50,2)
         self.planets = [p1,p2,p3]
@@ -88,43 +91,39 @@ class Universe:
         for i in range(len(self.planets)):
             pos = self.planets[i].position
             rad = self.planets[i].radius
-            elasticity = self.elasticity
 
             ##Boundary Checkr
             if pos.x - rad< 0: 
-                self.planets[i].velocity.x *= -elasticity
+                self.planets[i].velocity.x *= -1
                 pos.x = 2*rad - pos.x
             if pos.x + rad> self.width: 
-                self.planets[i].velocity.x *= -elasticity
+                self.planets[i].velocity.x *= -1
                 pos.x = 2*(self.width-rad) - pos.x
             if pos.y - rad< 0: 
-                self.planets[i].velocity.y *= -elasticity
+                self.planets[i].velocity.y *= -1
                 pos.y = 2*rad - pos.y
             if pos.y + rad> self.height: 
-                self.planets[i].velocity.y *= -elasticity
+                self.planets[i].velocity.y *= -1
                 pos.y = 2*(self.width-rad) - pos.y
 
             #Bouncing
             for j in range(i):
-                if self.planets[i].intersects(self.planets[j]):
-                    firstone = self.planets[i]
-                    secondone = self.planets[j]
-                    vi, vj = get_rebound_vectors(firstone,secondone)
-                    elasticity = firstone.elasticity * secondone.elasticity
-                    firstone.velocity = vi.scale(elasticity)
-                    secondone.velocity = vj.scale(elasticity)
+                p1 = self.planets[i]
+                p2 = self.planets[j]
+                if p1.intersects(p2):
+                    vi, vj = get_rebound_vectors(p1,p2)
+                    p1.velocity = vi
+                    p2.velocity = vj
 
-                    ##Overlapping fix
-                    dist = firstone.position.subtract(secondone.position).mod()
-                    overlap = 0.2*(firstone.radius+secondone.radius-dist+1)
-                    firstone.position.add(firstone.velocity.scale(-1).scale(overlap))
-                    secondone.position.add(secondone.velocity.scale(-1).scale(overlap))
+                    o = p1.radius + p2.radius - p1.position.subtract(p2.position).mod()
+                    n = p2.position.subtract(p1.position).normalised()
+                    p2.position = p2.position.add(n.scale(o/2))
+                    p1.position = p1.position.add(n.scale(-o/2))
 
-                if (i!=j):
-                    self.planets[i].attract(self.planets[j],self.clock_tick)
+                p1.attract(p2,self.clock_tick)
 
-            #pos update
-            self.planets[i].move(self.clock_tick)
+        for p in self.planets:
+            p.move(self.clock_tick)
             
             #self.planets[i].position = pos.add(self.planets[i].velocity.scale(self.clock_tick))
             
