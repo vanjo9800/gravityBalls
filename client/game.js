@@ -40,37 +40,43 @@ var circles = [],
     lastTimestamp = 0;
 engineSocket.onmessage = function (event) {
     circles = [];
-    console.log(event.data);
     if (event.data == "s") {
         startGame();
         return;
     }
-    if (event.data == "e") {
-        endGame();
+    if (event.data.startsWith("i")) {
+        var id = parseInt(event.data.trim("i"));
+        var c = new circle();
+        var nodecolour = c.calculateColour(id);
+        document.getElementById("title-text").style.color = nodecolour;
         return;
     }
 
     var currentTimestamp = new Date().getMilliseconds();
     var dt = (currentTimestamp - lastTimestamp) / 20; //update run interval
     var balls = JSON.parse(event.data);
-    for (var i = 0; i < balls.length; i++) {
-        if (circles[balls[i].id] == undefined) {
-            circles[balls[i].id] = new circle();
-            circles[balls[i].id].x = balls[i].x;
-            circles[balls[i].id].y = balls[i].y;
-            circles[balls[i].id].r = balls[i].r;
-        } else {
-            circles[balls[i].id].dx = (balls[i].x - circles[balls[i].id].x) / dt;
-            circles[balls[i].id].dy = (balls[i].y - circles[balls[i].id].y) / dt;
-            circles[balls[i].id].dr = (balls[i].r - circles[balls[i].id].r) / dt;
-            circles[balls[i].id].dt = dt;
+    if (startGame) {
+        for (var i = 0; i < balls.length; i++) {
+            if (circles[balls[i].id] == undefined) {
+                circles[balls[i].id] = new circle();
+                circles[balls[i].id].x = balls[i].x;
+                circles[balls[i].id].y = balls[i].y;
+                circles[balls[i].id].r = balls[i].r;
+            } else {
+                circles[balls[i].id].dx = (balls[i].x - circles[balls[i].id].x) / dt;
+                circles[balls[i].id].dy = (balls[i].y - circles[balls[i].id].y) / dt;
+                circles[balls[i].id].dr = (balls[i].r - circles[balls[i].id].r) / dt;
+                circles[balls[i].id].dt = dt;
+            }
         }
+        lastTimestamp = currentTimestamp;
     }
-    lastTimestamp = currentTimestamp;
 }
 
 function requestStart() {
     engineSocket.send("s");
+    
+
 }
 
 function update() {
