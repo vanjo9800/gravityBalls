@@ -83,6 +83,12 @@ function update() {
         //     }
         //     if (collision) circles[i].moveBack();
     }
+    if (isKeyPressed[38]) { //up
+        engineSocket.send("+");
+    }
+    if (isKeyPressed[40]) { //down
+        engineSocket.send("-");
+    }
 }
 
 function draw() {
@@ -105,15 +111,4 @@ function clearScreen() {
     document.getElementById("startscreen").style.display = "none";
     document.getElementById("gamescreen").style.display = "block";
     startedGame = true;
-}
-
-function keyup(key) {
-    console.log(key);
-    if (isKeyPressed[38]) { //up
-        engineSocket.send("+");
-    }
-
-    if (isKeyPressed[40]) { //down
-        engineSocket.send("-");
-    }
 }

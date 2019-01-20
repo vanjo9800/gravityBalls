@@ -67,32 +67,12 @@
             //   context.clearRect(0, 0, canvas.width, canvas.height);
             context.globalAlpha = 1;
 
-            // draw grid
-            //context.fillStyle = "#FF0000";
-            context.font = "10px Arial";
-            if (typeof gridSize != "undefined" && gridSize >= 25) {
-                context.fillText(0, 4, 10);
-                context.beginPath();
-                for (i = gridSize; i < canvas.width; i += gridSize) {
-                    context.moveTo(i, 0);
-                    context.lineTo(i, canvas.height);
-                    context.fillText(i, i + 4, 10);
-                }
-                for (i = gridSize; i < canvas.height; i += gridSize) {
-                    context.moveTo(0, i);
-                    context.lineTo(canvas.width, i);
-                    context.fillText(i, 4, i + 10);
-                }
-                context.stroke();
-            }
-
-            draw(); // call progammer's draw() function
-
+            draw();
             reqAnimationFrame(redraw);
         };
 
         function callupdate() {
-            update(); // call programmer's update() function
+            update();
             setTimeout(callupdate, 10); // and 10 ms after that ...
         };
 
