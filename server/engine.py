@@ -36,7 +36,7 @@ class Planet:
         self.velocity = v
         self.radius = r
         self.mass = m
-        self.elasticity = 1
+        self.elasticity = 0.6
         self.nid=nid
 
     def intersects(self,p):
@@ -49,7 +49,7 @@ class Planet:
     def attract(self,otherp,clock_tick):
         between = self.position.subtract(otherp.position)
         dist = between.mod()
-        force = 5000*((self.mass * otherp.mass / dist ** 2)**1)
+        force = 500*((self.mass * otherp.mass / dist ** 2)**1)
         self.accelerate(between.scale(-force),clock_tick)
         otherp.accelerate(between.scale(force),clock_tick)
         #Scale force to clock tick?
@@ -67,13 +67,13 @@ def get_rebound_vectors(p1, p2):
 
 class Universe:
     def __init__(self, w, h, r):
-        p1 = Planet(Vector(30,150), Vector(20,100),0, 30,0)
-        p2 = Planet(Vector(100,50), Vector(2,200), 1, 50,2)
+        p1 = Planet(Vector(30,150), Vector(20,100),0, 30,1)
+        p2 = Planet(Vector(100,40), Vector(2,200), 1, 50,2)
         p3 = Planet(Vector(300,50), Vector(2,200), 2, 50,2)
         self.planets = [p1,p2,p3]
         self.width = w
         self.height = h
-        self.elasticity = 0.9
+        self.elasticity = 0.75
 
         self.clock_tick = r
 
@@ -111,14 +111,15 @@ class Universe:
                     secondone = self.planets[j]
                     vi, vj = get_rebound_vectors(firstone,secondone)
                     elasticity = firstone.elasticity * secondone.elasticity
-                    firstone.velocity = vi.scale(elasticity)
-                    secondone.velocity = vj.scale(elasticity)
+                    firstone.velocity = vi#.scale(elasticity)
+                    secondone.velocity = vj#.scale(elasticity)
 
                     ##Overlapping fix
-                    dist = firstone.position.subtract(secondone.position).mod()
-                    overlap = 0.2*(firstone.radius+secondone.radius-dist+1)
-                    firstone.position.add(firstone.velocity.scale(-1).scale(overlap))
-                    secondone.position.add(secondone.velocity.scale(-1).scale(overlap))
+                    between = firstone.position.subtract(secondone.position)
+                    dist = between.mod()
+                    overlap = (firstone.radius+secondone.radius-dist+1)*1
+                    firstone.position= firstone.position.add(between.normalised().scale(overlap))
+                    secondone.position=secondone.position.add(between.normalised().scale(-1).scale(overlap))
 
                 if (i!=j):
                     self.planets[i].attract(self.planets[j],self.clock_tick)
