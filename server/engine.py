@@ -1,5 +1,6 @@
 import math
 import json
+import random
 
 class Vector:
     def __init__(self, x=0, y=0):
@@ -86,6 +87,35 @@ class Universe:
             data.append({'x': p.position.x, 'y': p.position.y, 'r': p.radius,'id':p.nid})
         return json.dumps(data)
 
+    def shrink(self,planet_id):
+        #Selection by list comprehensilson? lol
+        selected_planet = [x for x in self.planets if x.nid==planet_id]
+        selected_planet.radius -= 1
+        selected_planet.mass -= (math.pi * (selected_planet.radius**2))
+
+    def grow(self,planet_id):
+        selected_planet = [x for x in self.planets if x.nid==planet_id]
+        selected_planet.radius += 1
+        selected_planet.mass += (math.pi * (selected_planet.radius**2))
+
+    def add_planet(self,planet_id):
+        new_id = random.randint(1,1000)
+        ids = [x.nid for x in self.planets]
+        ##To make sure Ids are unique lol
+        while new_id in ids:
+            new_id = random.randint(1,1000)
+        
+        newp = Planet(Vector(self.width/2,self.height/2),Vector(0,0),new_id,20,1)
+        self.planets.append(newp)
+        return new_id
+
+    def remove_planet(self,planet_id):
+        ids = [x.nid for x in self.planets]
+        remove_index = ids.index(planet_id)
+        #Dangerous - del is overloaded
+        del self.planets[remove_index]
+        
+
     def run_loop(self):
 
         for i in range(len(self.planets)):
@@ -115,6 +145,7 @@ class Universe:
                     p1.velocity = vi
                     p2.velocity = vj
 
+                    ##Fix for intersecting
                     o = p1.radius + p2.radius - p1.position.subtract(p2.position).mod()
                     n = p2.position.subtract(p1.position).normalised()
                     p2.position = p2.position.add(n.scale(o/2))
