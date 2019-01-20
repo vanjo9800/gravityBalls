@@ -35,11 +35,11 @@ class Vector:
         return Vector(self.x,self.y).scale(1/self.mod())
 
 class Planet:
-    def __init__(self, p, v, nid, r=1, m=1):
+    def __init__(self, p, v, nid, r=1):
         self.position = p
         self.velocity = v
         self.radius = r
-        self.mass = m
+        self.mass = r**2
         self.elasticity = 1
         self.nid=nid
 
@@ -53,13 +53,18 @@ class Planet:
     def attract(self,otherp,clock_tick):
         between = self.position.subtract(otherp.position)
         dist = between.mod()
-        force = 5000*((self.mass * otherp.mass / dist ** 2)**1)
+        force = 0.01*((self.mass * otherp.mass / dist ** 2)**1)
         self.accelerate(between.scale(-force),clock_tick)
         otherp.accelerate(between.scale(force),clock_tick)
         #Scale force to clock tick?
         
     def move(self,clock_tick=1):
         self.position = self.position.add(self.velocity.scale(clock_tick))
+
+    def update_mass(self):
+        om = self.mass
+        self.mass = self.radius**2
+        self.velocity = self.velocity.scale(om/self.mass)
 
 def get_rebound_vectors(p1, p2):
     n = p2.position.subtract(p1.position).normalised()
@@ -71,9 +76,9 @@ def get_rebound_vectors(p1, p2):
 
 class Universe:
     def __init__(self, w, h, r):
-        p1 = Planet(Vector(30,150), Vector(20,100),0, 30,1)
-        p2 = Planet(Vector(100,50), Vector(2,200), 1, 50,2)
-        p3 = Planet(Vector(300,50), Vector(2,200), 2, 50,2)
+        p1 = Planet(Vector(30,150), Vector(20,100),0, 30)
+        p2 = Planet(Vector(100,50), Vector(2,200), 1, 30)
+        p3 = Planet(Vector(300,50), Vector(2,200), 2, 30)
         self.planets = [p1,p2,p3]
         self.width = w
         self.height = h
@@ -89,14 +94,16 @@ class Universe:
 
     def shrink(self,planet_id):
         #Selection by list comprehensilson? lol
-        selected_planet = [x for x in self.planets if x.nid==planet_id]
-        selected_planet.radius -= 1
-        selected_planet.mass -= (math.pi * (selected_planet.radius**2))
+        selected_planet = [x for x in self.planets if x.nid==planet_id][0]
+        if (selected_planet.radius - 5 < 20): return
+        selected_planet.radius -= 5
+        selected_planet.update_mass()
 
     def grow(self,planet_id):
-        selected_planet = [x for x in self.planets if x.nid==planet_id]
-        selected_planet.radius += 1
-        selected_planet.mass += (math.pi * (selected_planet.radius**2))
+        selected_planet = [x for x in self.planets if x.nid==planet_id][0]
+        if (selected_planet.radius + 5 > 100): return
+        selected_planet.radius += 5
+        selected_planet.update_mass()
 
     def add_planet(self):
         new_id = random.randint(1,1000)
@@ -105,7 +112,7 @@ class Universe:
         while new_id in ids:
             new_id = random.randint(1,1000)
         
-        newp = Planet(Vector(self.width/2,self.height/2),Vector(0,0),new_id,20,1)
+        newp = Planet(Vector(self.width/2,self.height/2),Vector(0,0),new_id,20)
         self.planets.append(newp)
         return new_id
 
@@ -124,16 +131,16 @@ class Universe:
 
             ##Boundary Checkr
             if pos.x - rad< 0: 
-                self.planets[i].velocity.x *= -1
+                self.planets[i].velocity.x *= -self.elasticity
                 pos.x = 2*rad - pos.x
             if pos.x + rad> self.width: 
-                self.planets[i].velocity.x *= -1
+                self.planets[i].velocity.x *= -self.elasticity
                 pos.x = 2*(self.width-rad) - pos.x
             if pos.y - rad< 0: 
-                self.planets[i].velocity.y *= -1
+                self.planets[i].velocity.y *= -self.elasticity
                 pos.y = 2*rad - pos.y
             if pos.y + rad> self.height: 
-                self.planets[i].velocity.y *= -1
+                self.planets[i].velocity.y *= -self.elasticity
                 pos.y = 2*(self.width-rad) - pos.y
 
             #Bouncing
