@@ -8,10 +8,13 @@ physics_rate = 500
 
 universe = Universe(width, height, 1/physics_rate)
 
+competition_mode = True
+game_active = not competition_mode
+
 async def physics_loop():
     while True:
         cur_time = time.time()
-        universe.run_loop()
+        if game_active: universe.run_loop()
         await asyncio.sleep(1/physics_rate - time.time() + cur_time)
 
 

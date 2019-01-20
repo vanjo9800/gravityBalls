@@ -21,12 +21,12 @@
             <h1 id="title-text">GRAVITY GAMEEE</h1>
         </div>
         <div class="container" id="arrowDiv">
-            <a data-scroll class="arrow" href="javascript:clearScreen()">
+            <a data-scroll class="arrow" href="javascript:requestStart()">
                 <!-- <div class="arrow"></div> -->
             </a>
         </div>
     </div>
-    <div id="gamescreen" style="display:none">
+    <div id="gamescreen">
         <canvas id="gameplay" style="z-index:1"></canvas>
         <!-- <div type="button" style="z-index:2; position:absolute; top:50%; left:50%" id="snapchat-login"></div> -->
     </div>
@@ -42,8 +42,10 @@
         window.onresize = function () {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            canvas.getContext("2d").scale(canvas.width / 900, canvas.width / 900);
         };
         var context = canvas.getContext("2d");
+        context.scale(canvas.width / 900, canvas.width / 900);
         context.fillStyle = "#0000ff";
         // global variables with mouse coordinates
         var mouseX = 0;
@@ -79,60 +81,67 @@
         function init() {
             if ('ontouchstart' in window || navigator.maxTouchPoints) {
                 isMobile = true;
-                window.addEventListener("touchstart", function (e) {
-                    var touchobj = e.changedTouches[0];
-                    mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
-                    mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
-                    mousedown();
-                });
+            }
+            window.addEventListener("touchstart", function (e) {
+                var touchobj = e.changedTouches[0];
+                mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
+                mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
+                if (mouseY < window.innerHeight / 2) {
+                    isKeyPressed[38] = true;
+                } else {
+                    isKeyPressed[40] = true;
+                }
+                mousedown();
+            });
 
-                window.addEventListener("touchend", function (e) {
-                    var touchobj = e.changedTouches[0];
-                    mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
-                    mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
-                    mouseup();
-                });
-                window.addEventListener("touchmove", function (e) {
-                    var touchobj = e.changedTouches[0];
-                    mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
-                    mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
+            window.addEventListener("touchend", function (e) {
+                var touchobj = e.changedTouches[0];
+                mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
+                mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
+                mouseup();
+            });
+            window.addEventListener("touchmove", function (e) {
+                var touchobj = e.changedTouches[0];
+                mouseX = parseInt(touchobj.pageX - canvas.offsetLeft);
+                mouseY = parseInt(touchobj.pageY - canvas.offsetTop);
+            });
+
+            window.addEventListener("mousemove", function (e) {
+                mouseX = e.pageX - canvas.offsetLeft;
+                mouseY = e.pageY - canvas.offsetTop;
+            });
+
+            if (typeof mousemove != "undefined") {
+                window.addEventListener("mousemove", mousemove);
+            }
+            if (typeof mouseup != "undefined") {
+                window.addEventListener("mouseup", mouseup);
+            }
+            if (typeof mousedown != "undefined") {
+                window.addEventListener("mousedown", mousedown);
+            }
+
+            if (typeof keydown != "undefined") {
+                window.addEventListener("keydown", function (e) {
+                    isKeyPressed[e.keyCode] = 1;
+                    keydown(e.keyCode);
+                    console.log("seen");
                 });
             } else {
-                window.addEventListener("mousemove", function (e) {
-                    mouseX = e.pageX - canvas.offsetLeft;
-                    mouseY = e.pageY - canvas.offsetTop;
+                window.addEventListener("keydown", function (e) {
+                    isKeyPressed[e.keyCode] = 1;
+                    console.log("seen2");
                 });
-
-                if (typeof mousemove != "undefined") {
-                    window.addEventListener("mousemove", mousemove);
-                }
-                if (typeof mouseup != "undefined") {
-                    window.addEventListener("mouseup", mouseup);
-                }
-                if (typeof mousedown != "undefined") {
-                    window.addEventListener("mousedown", mousedown);
-                }
-
-                if (typeof keydown != "undefined") {
-                    window.addEventListener("keydown", function (e) {
-                        isKeyPressed[e.keyCode] = 1;
-                        keydown(e.keyCode);
-                    });
-                } else {
-                    window.addEventListener("keydown", function (e) {
-                        isKeyPressed[e.keyCode] = 1;
-                    });
-                }
-                if (typeof keyup != "undefined") {
-                    window.addEventListener("keyup", function (e) {
-                        isKeyPressed[e.keyCode] = 0;
-                        keyup(e.keyCode);
-                    });
-                } else {
-                    window.addEventListener("keyup", function (e) {
-                        isKeyPressed[e.keyCode] = 0;
-                    });
-                }
+            }
+            if (typeof keyup != "undefined") {
+                window.addEventListener("keyup", function (e) {
+                    isKeyPressed[e.keyCode] = 0;
+                    keyup(e.keyCode);
+                });
+            } else {
+                window.addEventListener("keyup", function (e) {
+                    isKeyPressed[e.keyCode] = 0;
+                });
             }
             if (typeof draw == "undefined") {
                 redraw = function () {
@@ -143,7 +152,6 @@
                     context.fillText("Press <F12> for error info!", 40, 40);
                 };
             }
-            console.log("redraw");
             redraw();
             callupdate();
         };

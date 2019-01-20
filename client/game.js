@@ -40,7 +40,16 @@ var circles = [],
     lastTimestamp = 0;
 engineSocket.onmessage = function (event) {
     circles = [];
-    if (!startedGame) return;
+    console.log(event.data);
+    if (event.data == "s") {
+        startGame();
+        return;
+    }
+    if (event.data == "e") {
+        endGame();
+        return;
+    }
+
     var currentTimestamp = new Date().getMilliseconds();
     var dt = (currentTimestamp - lastTimestamp) / 20; //update run interval
     var balls = JSON.parse(event.data);
@@ -60,8 +69,9 @@ engineSocket.onmessage = function (event) {
     lastTimestamp = currentTimestamp;
 }
 
-var width = window.innerWidth;
-var height = window.innerHeight;
+function requestStart() {
+    engineSocket.send("s");
+}
 
 function update() {
     if (!startedGame) return;
@@ -84,7 +94,7 @@ function update() {
         //         circles[i].dx = -circles[i].dx;
         //     }
         //     var collision = false;
-        //     for (var j = 0; j < initNumber; j++) {
+        //     for j = 0; j < initNumber; j++) {
         //         if (i == j) continue;
         //         if (circles[i].collidingWith(circles[j])) {
         //             collision = true;
@@ -93,6 +103,7 @@ function update() {
         //     if (collision) circles[i].moveBack();
     }
     if (isKeyPressed[38]) { //up
+        console.log("up")
         engineSocket.send("+");
         isKeyPressed[38] = false;
     }
@@ -106,7 +117,8 @@ function draw() {
     if (!startedGame) return;
 
     context.fillStyle = "black";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillRect(0, 0, 900, 900);
+
     // if (!clicked) 
     //     canvas.style.webkitFilter = "blur(10px)";
     //     return;
@@ -118,8 +130,8 @@ function draw() {
     }
 }
 
-function clearScreen() {
+function startGame() {
+    console.log("start");
     document.getElementById("startscreen").style.display = "none";
-    document.getElementById("gamescreen").style.display = "block";
     startedGame = true;
 }

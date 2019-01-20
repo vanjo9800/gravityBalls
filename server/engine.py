@@ -1,6 +1,7 @@
 import math
 import json
 import random
+import game
 
 class Vector:
     def __init__(self, x=0, y=0):
@@ -34,6 +35,7 @@ class Vector:
     def normalised(self):
         return Vector(self.x,self.y).scale(1/self.mod())
 
+
 class Planet:
     def __init__(self, p, v, nid, r=1):
         self.position = p
@@ -53,7 +55,7 @@ class Planet:
     def attract(self,otherp,clock_tick):
         between = self.position.subtract(otherp.position)
         dist = between.mod()
-        force = 1*(self.mass * otherp.mass / dist ** 1.2)
+        force = 150*(self.mass * otherp.mass / dist ** 2)
         self.accelerate(between.scale(-force),clock_tick)
         otherp.accelerate(between.scale(force),clock_tick)
         #Scale force to clock tick?
@@ -75,14 +77,17 @@ def get_rebound_vectors(p1, p2):
     return (p1.velocity.subtract(n.scale(u1-v1)), p2.velocity.subtract(n.scale(u2-v2)))
 
 class Universe:
-    def __init__(self, w, h, r):
-        p1 = Planet(Vector(30,150), Vector(2,5),0, 30)
-        p2 = Planet(Vector(100,50), Vector(2,-5), 1, 30)
-        p3 = Planet(Vector(300,50), Vector(0,10), 2, 30)
-        self.planets = [p1,p2,p3]
+    def __init__(self, w, h, r, extras=False):
+        if extras:
+            p1 = Planet(Vector(30,150), Vector(2,5),1, 30)
+            p2 = Planet(Vector(100,50), Vector(2,-5), 500, 30)
+            p3 = Planet(Vector(300,50), Vector(0,10), 20, 30)
+            self.planets = [p1,p2,p3]
+        else:
+            self.planets = []
         self.width = w
         self.height = h
-        self.elasticity = 0.9
+        self.elasticity = 0.95
 
         self.clock_tick = r
 
@@ -95,32 +100,48 @@ class Universe:
     def shrink(self,planet_id):
         #Selection by list comprehensilson? lol
         selected_planet = [x for x in self.planets if x.nid==planet_id][0]
-        if (selected_planet.radius - 5 < 20): return
-        selected_planet.radius -= 5
-        selected_planet.update_mass(0.2)
+        if (selected_planet.radius - 10 < 20): return
+        selected_planet.radius -= 10
+        selected_planet.update_mass(0.3)
 
     def grow(self,planet_id):
         selected_planet = [x for x in self.planets if x.nid==planet_id][0]
-        if (selected_planet.radius + 5 > 100): return
-        selected_planet.radius += 5
+        if (selected_planet.radius + 10 > 80): return
+        selected_planet.radius += 10
         selected_planet.update_mass()
 
-    def add_planet(self):
+    player_slots = [-1]
+
+    def add_planet(self, competition_mode=True):
         new_id = random.randint(0,100000)
         ids = [x.nid for x in self.planets]
         ##To make sure Ids are unique lol
         while new_id in ids:
-            new_id = random.randint(1,1000)
+            new_id = random.randint(0,100000)
         
-        newp = Planet(Vector(self.width/2,self.height/2),Vector(0,0),new_id,20)
+        p = Vector(self.width/2, self.height/2)
+        if competition_mode:
+            if all(i >= 0 for i in self.player_slots):
+                self.player_slots = [j for i in self.player_slots for j in [i,-1]]
+            for i,v in enumerate(self.player_slots):
+                if v < 0:
+                    self.player_slots[i] = new_id
+                    t = math.pi*(-0.75 - 2*i/len(self.player_slots))
+                    p = p.add(Vector(math.cos(t), math.sin(t)).scale(self.width*0.3))
+                    break
+
+        ivel = 50
+        newp = Planet(p,Vector(2*ivel*(random.random()-0.5),2*ivel*(random.random()-0.5)),new_id,20)
         self.planets.append(newp)
         return new_id
 
     def remove_planet(self,planet_id):
         ids = [x.nid for x in self.planets]
-        remove_index = ids.index(planet_id)
-        #Dangerous - del is overloaded
-        del self.planets[remove_index]
+        self.player_slots = [-1 if i == planet_id else i for i in self.player_slots]
+        if all(i < 0 for i in self.player_slots): self.player_slots = [-1]
+        if planet_id in ids:
+            remove_index = ids.index(planet_id)
+            del self.planets[remove_index]
         
 
     def run_loop(self):
