@@ -56,7 +56,7 @@ var height = window.innerHeight;
 
 function update() {
     if (!startedGame) return;
-    for (var id in Object.keys(circles)) {
+    for (var id in circles) {
         circles[id].move();
         //     if (circles[i].y + circles[i].r > canvas.height) {
         //         circles[i].y = canvas.height - circles[i].r;
@@ -102,7 +102,7 @@ function draw() {
     // } else {
     //     canvas.style.webkitFilter = "blur(0px)";
     // }
-    for (var id in Object.keys(circles)) {
+    for (var id in circles) {
         circles[id].draw();
     }
 }

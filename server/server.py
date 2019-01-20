@@ -35,7 +35,7 @@ async def handler(websocket, path):
 start_server = websockets.serve(handler, '', 8765)
 
 if len(sys.argv) > 1 and sys.argv[1] == "-visual":
-    game_loop = game.render_game()
+    game_loop = game.render_loop()
 else:
     game_loop = game.physics_loop()
 
