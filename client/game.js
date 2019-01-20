@@ -10,15 +10,11 @@ function circle() {
     this.dr = 0;
     this.dt = 0;
     this.move = function () {
-        if (this.dt == 0) return;
+        if (this.dt <= 0.0) return;
         this.x += this.dx;
         this.y += this.dy;
         this.r += this.dr;
         this.dt--;
-    };
-    this.moveBack = function () {
-        this.x += this.dx;
-        this.y += this.dy;
     };
     this.draw = function () {
         context.beginPath();
@@ -33,17 +29,11 @@ function circle() {
 }
 
 var circles = [],
-    myID = undefined,
     lastTimestamp = 0;
 engineSocket.onmessage = function (event) {
     if (!startedGame) return;
-    /*if(myID == undefined){
-        myID = JSON.parse(event.data);
-        return;
-    }*/
     var currentTimestamp = new Date().getMilliseconds();
-    var dt = (currentTimestamp - lastTimestamp) / 10; //update run interval
-    //console.log(dt);
+    var dt = (currentTimestamp - lastTimestamp) / 20; //update run interval
     var balls = JSON.parse(event.data);
     for (var i = 0; i < balls.length; i++) {
         if (circles[balls[i].id] == undefined) {
@@ -56,28 +46,13 @@ engineSocket.onmessage = function (event) {
             circles[balls[i].id].dy = (balls[i].y - circles[balls[i].id].y) / dt;
             circles[balls[i].id].dr = (balls[i].r - circles[balls[i].id].r) / dt;
             circles[balls[i].id].dt = dt;
-            console.log(circles[balls[i].id].dx); //, circles[balls[i].id].dy, circles[balls[i].id].dr);
         }
     }
     lastTimestamp = currentTimestamp;
-    console.log(balls);
 }
 
 var width = window.innerWidth;
 var height = window.innerHeight;
-//var clicked = false;
-
-
-// var initNumber = 30;
-// for (var i = 0; i < initNumber; i++) {
-//     circles[i] = new circle();
-//     circles[i].x = Math.random() * width;
-//     circles[i].y = Math.random() * height;
-//     circles[i].r = Math.random() * 20 + 10;
-//     circles[i].dx = Math.random() * 10 + 3;
-//     circles[i].dy = Math.random() * 10 + 3;
-// }
-
 
 function update() {
     if (!startedGame) return;
@@ -115,7 +90,7 @@ function draw() {
 
     context.fillStyle = "black";
     context.fillRect(0, 0, canvas.width, canvas.height);
-    // if (!clicked) {
+    // if (!clicked) 
     //     canvas.style.webkitFilter = "blur(10px)";
     //     return;
     // } else {
@@ -133,18 +108,15 @@ function clearScreen() {
 }
 
 function keyup(key) {
-    // Show the pressed keycode in the console
     console.log(key);
     if (key == 38) { //up
         engineSocket.send(JSON.serialize({
-            id: myID,
             op: +1
         }));
     }
 
     if (key == 40) { //down
         engineSocket.send(JSON.serialize({
-            id: myID,
             op: -1
         }));
     }
